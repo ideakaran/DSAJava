@@ -1,91 +1,56 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Stack;
 
-//227. Basic Calculator II
-public class BasicCalculator2 {
-    Map<String, ArrayList<Integer>> operatorToIndex;
+class BasicCalculator2 {
 
-    public BasicCalculator2(){
-
-    }
     public int calculate(String s) {
-        String original = s;
-        clearOperators();
-        updateOperators(original);
-        for (String keys : operatorToIndex.keySet()) {
-            ArrayList index = (ArrayList)operatorToIndex.get(keys);
-            if(index.size() > 0) {
-                int opIndex = (int) index.get(0);
-                String result = performOperation(original.charAt(opIndex - 1) - '0', String.valueOf(keys), original.charAt(opIndex + 1) - '0');
-                original = original.replace(original.substring(opIndex - 1, opIndex + 2), result);
-                clearOperators();
-                updateOperators(original);
+
+        if(s.isEmpty() || s == null) {
+            return 0;
+        }
+        Stack<Integer> stack = new Stack();
+        int curr = 0;
+        int sum = 0;
+        char op = '+';
+
+        for(int i=0; i < s.length(); i++) {
+
+            if(Character.isDigit(s.charAt(i))) {
+                curr = curr * 10 + s.charAt(i) - '0';
+            }
+
+            if(!Character.isDigit(s.charAt(i)) && s.charAt(i) != ' ' || (i == s.length() - 1)) {
+                if(op == '+') {
+                    stack.push(curr);
+                }
+
+                if(op == '-') {
+                    stack.push(-curr);
+                }
+
+                if(op == '/') {
+                    int lastVal = stack.pop();
+                    stack.push(lastVal / curr);
+                }
+
+                if(op == '*') {
+                    int lastVal = stack.pop();
+                    stack.push(curr * lastVal);
+                }
+                op = s.charAt(i);
+                curr = 0;
             }
         }
-        return Integer.parseInt(original);
-    }
 
-    void updateOperators(String s) {
-        for(int i =0; i< s.length(); i++) {
-            char character = s.charAt(i);
-            setOperators(character, i);
+        while(!stack.isEmpty()) {
+            sum += stack.pop();
         }
+        return sum;
     }
-
-
-    void clearOperators() {
-        this.operatorToIndex = new HashMap<>();
-        this.operatorToIndex.put("*", new ArrayList<>());
-        this.operatorToIndex.put("/", new ArrayList<>());
-        this.operatorToIndex.put("+", new ArrayList<>());
-        this.operatorToIndex.put("-", new ArrayList<>());
-    }
-
-    public void setOperators(char character, int index){
-
-
-        switch (character) {
-            case('*'):
-            case('/'):
-            case('+'):
-            case('-'): {
-                ArrayList list = this.operatorToIndex.get(String.valueOf(character));
-                list.add(index);
-                break;
-            }
-        }
-    }
-
-
-    private String performOperation(int leftVal, String operator, int rightVal) {
-        String result = "";
-        switch (operator) {
-            case("*"): {
-                result = String.valueOf(leftVal * rightVal);
-                break;
-            }
-            case("/"): {
-                result = String.valueOf(leftVal / rightVal);
-                break;
-            }
-            case("+"): {
-                result = String.valueOf(leftVal + rightVal);
-                break;
-            }
-            case("-"): {
-                result = String.valueOf(leftVal - rightVal);
-                break;
-            }
-        }
-        return result;
-    }
-
 
     public static void main(String[] args) {
         BasicCalculator2 bc = new BasicCalculator2();
-        int val = bc.calculate("3+2*2/2");
-        System.out.println("val = " + val);
+        String s = "2*3+4";
+        int result = bc.calculate(s);
+        System.out.println("result = " + result);
     }
 }
